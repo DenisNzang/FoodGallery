@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galería de Imágenes</title>
+    <style>
+      * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+        
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .gallery-item {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .gallery-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .image-container {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+        
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        .gallery-item:hover .image-container img {
+            transform: scale(1.05);
+        }
+        
+        .image-title {
+            padding: 10px 15px;
+            font-weight: bold;
+            border-bottom: 1px solid #eee;
+            background-color: #f8f9fa;
+        }
+        
+        .rating {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .stars {
+            display: flex;
+        }
+        
+        .star {
+            color: #ccc;
+            font-size: 20px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .star:hover,
+        .star.active {
+            color: #f1c40f;
+        }
+        
+        .vote-count {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        
+        .comments {
+            padding: 15px;
+        }
+        
+        .comment-form {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        
+        .comment-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        
+        .comment-submit {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .comment-submit:hover {
+            background-color: #2980b9;
+        }
+        
+        .comment-list {
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .comment {
+            background-color: #f9f9f9;
+            padding: 8px 10px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .comment-author {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-right: 5px;
+        }
+        
+        .comment-date {
+            color: #7f8c8d;
+            font-size: 12px;
+            display: block;
+            margin-top: 3px;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .page-btn {
+            padding: 8px 15px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .page-btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .page-btn.active {
+            background-color: #2c3e50;
+        }
+        
+        .page-btn:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        
+        .page-info {
+            text-align: center;
+            margin-top: 10px;
+            color: #7f8c8d;
+        }
+        
+        .upload-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .upload-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+        }
+        
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .upload-form input, 
+        .upload-form textarea {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .upload-form button {
+            padding: 10px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .upload-close {
+            float: right;
+            cursor: pointer;
+            font-size: 24px;
+        }
+        
+        .upload-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .upload-btn:hover {
+            background-color: #27ae60;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Galería de Imágenes</h1>
+      <button class="upload-btn" id="uploadToggleBtn">+</button>
+      <div class="upload-modal" id="uploadModal">
+        <div class="upload-content">
+          <span class="upload-close" id="uploadCloseBtn">&times;</span>
+          <h2>Subir Nueva Imagen</h2>
+          <form class="upload-form" id="uploadForm">
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+              <button type="button" id="takePhotoBtn" style="flex: 1; padding: 10px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                Tomar Foto
+              </button>
+              <button type="button" id="selectFileBtn" style="flex: 1; padding: 10px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                Seleccionar Archivo
+              </button>
+            </div>
+            <input type="file" id="imageFile" accept="image/*" capture="environment" style="display: none;">
+            <input type="text" id="imageTitle" placeholder="Título de la imagen">
+            <textarea id="imageDescription" placeholder="Descripción (opcional)"></textarea>
+            <button type="submit">Subir Imagen</button>
+          </form>
+        </div>
+      </div>
+      <div class="gallery" id="imageGallery"></div>
+      <div class="pagination" id="paginationControls"></div>
+      <div class="page-info" id="pageInfo"></div>
+    </div>
+    <script>
+      // Configuración
+        const IMAGES_PER_PAGE = 18;
+        let currentPage = 1;
+        let totalImages = 0;
+        let totalPages = 1;
+        
+        // Elementos del DOM
+        const gallery = document.getElementById('imageGallery');
+        const pagination = document.getElementById('paginationControls');
+        const pageInfo = document.getElementById('pageInfo');
+        const uploadModal = document.getElementById('uploadModal');
+        const uploadToggleBtn = document.getElementById('uploadToggleBtn');
+        const uploadCloseBtn = document.getElementById('uploadCloseBtn');
+        const uploadForm = document.getElementById('uploadForm');
+        const imageFileInput = document.getElementById('imageFile');
+        
+        // Funciones auxiliares
+        function formatImageTitle(filename) {
+            return filename.replace(/\.[^/.]+$/, "")
+                          .replace(/[-_]/g, ' ')
+                          .split(' ')
+                          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                          .join(' ');
+        }
+        
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            return new Date(dateString).toLocaleDateString('es-ES', options);
+        }
+        
+        // Funciones para interactuar con la API
+        async function fetchImages(page = 1) {
+            try {
+                const response = await fetch(`api.php?action=get_images&page=${page}`);
+                if (!response.ok) throw new Error('Error en la respuesta del servidor');
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching images:', error);
+                showError('Error al cargar las imágenes. Por favor, recarga la página.');
+                return { success: false, images: [], total: 0 };
+            }
+        }
+        
+        async function submitVote(imageId, value) {
+            try {
+                const response = await fetch('api.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `action=vote&image_id=${imageId}&value=${value}`
+                });
+                if (!response.ok) throw new Error('Error en la respuesta del servidor');
+                return await response.json();
+            } catch (error) {
+                console.error('Error submitting vote:', error);
+                showError('Error al registrar el voto. Inténtalo de nuevo.');
+                return { success: false };
+            }
+        }
+        
+        async function submitComment(imageId, author, content) {
+            try {
+                const response = await fetch('api.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `action=comment&image_id=${imageId}&author=${encodeURIComponent(author)}&content=${encodeURIComponent(content)}`
+                });
+                if (!response.ok) throw new Error('Error en la respuesta del servidor');
+                return await response.json();
+            } catch (error) {
+                console.error('Error submitting comment:', error);
+                showError('Error al enviar el comentario. Inténtalo de nuevo.');
+                return { success: false };
+            }
+        }
+        
+        async function fetchComments(imageId) {
+            try {
+                const response = await fetch(`api.php?action=get_comments&image_id=${imageId}`);
+                if (!response.ok) throw new Error('Error en la respuesta del servidor');
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching comments:', error);
+                return [];
+            }
+        }
+        
+        async function uploadImage(file, title, description) {
+            try {
+                const formData = new FormData();
+                formData.append('action', 'upload');
+                formData.append('image', file);
+                formData.append('title', title);
+                formData.append('description', description);
+                
+                const response = await fetch('api.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) throw new Error('Error en la respuesta del servidor');
+                return await response.json();
+            } catch (error) {
+                console.error('Error uploading image:', error);
+                return { success: false, message: 'Error al subir la imagen' };
+            }
+        }
+        
+        // Funciones para renderizar la interfaz
+        function showError(message) {
+            const errorElement = document.createElement('div');
+            errorElement.className = 'error-message';
+            errorElement.textContent = message;
+            
+            const existingError = document.querySelector('.error-message');
+            if (existingError) {
+                existingError.replaceWith(errorElement);
+            } else {
+                document.querySelector('.container').prepend(errorElement);
+            }
+            
+            setTimeout(() => {
+                errorElement.style.opacity = '0';
+                setTimeout(() => errorElement.remove(), 500);
+            }, 5000);
+        }
+        
+        async function renderGallery(page = 1) {
+            gallery.innerHTML = '<p style="grid-column:1/-1;text-align:center;">Cargando imágenes...</p>';
+            
+            const data = await fetchImages(page);
+            if (!data.success) return;
+            
+            totalImages = data.total;
+            totalPages = Math.ceil(totalImages / IMAGES_PER_PAGE);
+            
+            gallery.innerHTML = '';
+            
+            if (data.images.length === 0) {
+                gallery.innerHTML = '<p style="grid-column:1/-1;text-align:center;">No hay imágenes disponibles.</p>';
+                return;
+            }
+            
+            data.images.forEach(async image => {
+                const galleryItem = document.createElement('div');
+                galleryItem.className = 'gallery-item';
+                galleryItem.dataset.imageId = image.id;
+                
+                galleryItem.innerHTML = `
+                    <div class="image-title">${image.title || formatImageTitle(image.filename)}</div>
+                    <div class="image-container">
+                        <img src="${image.filepath}" alt="${image.title || formatImageTitle(image.filename)}" loading="lazy">
+                    </div>
+                    <div class="rating">
+                        <div class="stars">
+                            <span class="star" data-value="1">★</span>
+                            <span class="star" data-value="2">★</span>
+                            <span class="star" data-value="3">★</span>
+                            <span class="star" data-value="4">★</span>
+                            <span class="star" data-value="5">★</span>
+                        </div>
+                        <span class="vote-count">${image.vote_count || 0} votos</span>
+                    </div>
+                    <div class="comments">
+                        <form class="comment-form">
+                            <input type="text" class="comment-input" placeholder="Añade un comentario..." required>
+                            <button type="submit" class="comment-submit">Enviar</button>
+                        </form>
+                        <div class="comment-list"></div>
+                    </div>
+                `;
+                
+                gallery.appendChild(galleryItem);
+                
+                // Actualizar estrellas según el rating promedio
+                if (image.average_rating) {
+                    const stars = galleryItem.querySelectorAll('.star');
+                    const rating = Math.round(image.average_rating);
+                    stars.forEach((star, index) => {
+                        if (index < rating) {
+                            star.classList.add('active');
+                        }
+                    });
+                }
+                
+                // Cargar comentarios
+                const comments = await fetchComments(image.id);
+                const commentList = galleryItem.querySelector('.comment-list');
+                
+                if (comments.length > 0) {
+                    comments.forEach(comment => {
+                        const commentElement = document.createElement('div');
+                        commentElement.className = 'comment';
+                        commentElement.innerHTML = `
+                            <span class="comment-author">${comment.author}:</span> 
+                            ${comment.content}
+                            <span class="comment-date">${formatDate(comment.comment_date)}</span>
+                        `;
+                        commentList.appendChild(commentElement);
+                    });
+                } else {
+                    commentList.innerHTML = '<p style="color:#999;text-align:center;">No hay comentarios aún</p>';
+                }
+            });
+            
+            updatePagination();
+            updatePageInfo();
+        }
+        
+        function updatePagination() {
+            pagination.innerHTML = '';
+            
+            // Botón Anterior
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'page-btn';
+            prevBtn.textContent = 'Anterior';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderGallery(currentPage);
+                }
+            });
+            pagination.appendChild(prevBtn);
+            
+            // Botones de páginas
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            if (startPage > 1) {
+                const firstPageBtn = document.createElement('button');
+                firstPageBtn.className = 'page-btn';
+                firstPageBtn.textContent = '1';
+                firstPageBtn.addEventListener('click', () => {
+                    currentPage = 1;
+                    renderGallery(currentPage);
+                });
+                pagination.appendChild(firstPageBtn);
+                
+                if (startPage > 2) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.textContent = '...';
+                    ellipsis.style.padding = '8px 15px';
+                    pagination.appendChild(ellipsis);
+                }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+                pageBtn.textContent = i;
+                pageBtn.addEventListener('click', () => {
+                    currentPage = i;
+                    renderGallery(currentPage);
+                });
+                pagination.appendChild(pageBtn);
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.textContent = '...';
+                    ellipsis.style.padding = '8px 15px';
+                    pagination.appendChild(ellipsis);
+                }
+                
+                const lastPageBtn = document.createElement('button');
+                lastPageBtn.className = 'page-btn';
+                lastPageBtn.textContent = totalPages;
+                lastPageBtn.addEventListener('click', () => {
+                    currentPage = totalPages;
+                    renderGallery(currentPage);
+                });
+                pagination.appendChild(lastPageBtn);
+            }
+            
+            // Botón Siguiente
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'page-btn';
+            nextBtn.textContent = 'Siguiente';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderGallery(currentPage);
+                }
+            });
+            pagination.appendChild(nextBtn);
+        }
+        
+        function updatePageInfo() {
+            const startIndex = (currentPage - 1) * IMAGES_PER_PAGE + 1;
+            const endIndex = Math.min(currentPage * IMAGES_PER_PAGE, totalImages);
+            
+            pageInfo.textContent = 
+                `Mostrando imágenes ${startIndex} a ${endIndex} de ${totalImages} (Página ${currentPage} de ${totalPages})`;
+        }
+        
+        // Event Listeners
+        function setupEventListeners() {
+            // Delegación de eventos para votos
+            document.addEventListener('click', async (e) => {
+                if (e.target.classList.contains('star')) {
+                    const star = e.target;
+                    const stars = star.parentElement.querySelectorAll('.star');
+                    const imageItem = star.closest('.gallery-item');
+                    const imageId = imageItem.dataset.imageId;
+                    const voteValue = parseInt(star.dataset.value);
+                    
+                    // Actualizar UI primero para mejor experiencia de usuario
+                    stars.forEach((s, index) => {
+                        s.classList.toggle('active', index < voteValue);
+                    });
+                    
+                    // Enviar voto al servidor
+                    const result = await submitVote(imageId, voteValue);
+                    
+                    if (result.success) {
+                        // Actualizar contador de votos
+                        const voteCountElement = star.parentElement.nextElementSibling;
+                        const currentVotes = parseInt(voteCountElement.textContent) || 0;
+                        voteCountElement.textContent = `${currentVotes + 1} votos`;
+                    } else {
+                        // Revertir cambios si falla
+                        stars.forEach(s => s.classList.remove('active'));
+                    }
+                }
+            });
+            
+            // Delegación de eventos para comentarios
+            document.addEventListener('submit', async (e) => {
+                if (e.target.classList.contains('comment-form')) {
+                    e.preventDefault();
+                    const form = e.target;
+                    const input = form.querySelector('.comment-input');
+                    const commentList = form.nextElementSibling;
+                    const imageItem = form.closest('.gallery-item');
+                    const imageId = imageItem.dataset.imageId;
+                    
+                    if (input.value.trim()) {
+                        // Deshabilitar el formulario mientras se envía
+                        form.querySelector('button').disabled = true;
+                        
+                        // Enviar comentario
+                        const result = await submitComment(imageId, 'Usuario', input.value.trim());
+                        
+                        // Habilitar el formulario nuevamente
+                        form.querySelector('button').disabled = false;
+                        
+                        if (result.success) {
+                            // Añadir comentario a la UI
+                            if (commentList.querySelector('p')) {
+                                commentList.innerHTML = '';
+                            }
+                            
+                            const commentElement = document.createElement('div');
+                            commentElement.className = 'comment';
+                            commentElement.innerHTML = `
+                                <span class="comment-author">Usuario:</span> 
+                                ${input.value.trim()}
+                                <span class="comment-date">Ahora</span>
+                            `;
+                            commentList.prepend(commentElement);
+                            input.value = '';
+                        }
+                    }
+                }
+            });
+
+            // Event listeners para los botones de cámara/selección
+            document.getElementById('takePhotoBtn').addEventListener('click', () => {
+                // Forzar modo cámara
+                imageFileInput.setAttribute('capture', 'environment');
+                imageFileInput.click();
+            });
+        
+            document.getElementById('selectFileBtn').addEventListener('click', () => {
+                // Quitar atributo capture para selección normal
+                imageFileInput.removeAttribute('capture');
+                imageFileInput.click();
+            });
+        
+            // Mostrar vista previa si es una imagen de la cámara
+            imageFileInput.addEventListener('change', function(e) {
+                if (this.files && this.files[0]) {
+                    const file = this.files[0];
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(event) {
+                        // Podrías mostrar una vista previa aquí si lo deseas
+                        console.log('Imagen lista para subir:', file.name);
+                    };
+                    
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Modal de subida
+            uploadToggleBtn.addEventListener('click', () => {
+                uploadModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            });
+            
+            uploadCloseBtn.addEventListener('click', () => {
+                uploadModal.style.display = 'none';
+                document.body.style.overflow = '';
+            });
+            
+            uploadForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const file = imageFileInput.files[0];
+                const title = document.getElementById('imageTitle').value.trim();
+                const description = document.getElementById('imageDescription').value.trim();
+                
+                if (!file) {
+                    showError('Por favor, selecciona una imagen');
+                    return;
+                }
+                
+                // Validar tipo de archivo
+                const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                if (!validTypes.includes(file.type)) {
+                    showError('Tipo de archivo no válido. Solo se permiten imágenes (JPEG, PNG, GIF, WEBP)');
+                    return;
+                }
+                
+                // Validar tamaño de archivo (5MB máximo)
+                if (file.size > 5 * 1024 * 1024) {
+                    showError('La imagen es demasiado grande (máximo 5MB)');
+                    return;
+                }
+                
+                // Deshabilitar el botón de enviar
+                const submitBtn = uploadForm.querySelector('button');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Subiendo...';
+                
+                try {
+                    const result = await uploadImage(file, title, description);
+                    
+                    if (result.success) {
+                        alert('Imagen subida y redimensionada correctamente');
+                        uploadModal.style.display = 'none';
+                        uploadForm.reset();
+                        currentPage = 1;
+                        renderGallery(currentPage);
+                    }
+
+                    else {
+                        showError(result.message || 'Error al subir la imagen');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showError('Error al subir la imagen');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Subir Imagen';
+                }
+            });
+            
+            // Cerrar modal al hacer clic fuera del contenido
+            uploadModal.addEventListener('click', (e) => {
+                if (e.target === uploadModal) {
+                    uploadModal.style.display = 'none';
+                    document.body.style.overflow = '';
+                }
+            });
+        }
+        
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            renderGallery(currentPage);
+        });
+    </script>
+  </body>
+</html>
